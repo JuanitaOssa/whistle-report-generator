@@ -5,6 +5,7 @@ Handles authentication and file uploads using a service account.
 
 import os
 from pathlib import Path
+from typing import Optional
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -34,7 +35,7 @@ def get_drive_service():
     return build("drive", "v3", credentials=creds)
 
 
-def find_folder(service, folder_name: str, parent_id: str) -> str | None:
+def find_folder(service, folder_name: str, parent_id: str) -> Optional[str]:
     """Find a folder by name within a parent folder. Returns folder ID or None."""
     query = (
         f"name = '{folder_name}' and "
@@ -72,7 +73,7 @@ def get_or_create_folder(service, folder_name: str, parent_id: str) -> str:
     return create_folder(service, folder_name, parent_id)
 
 
-def find_file_in_folder(service, filename: str, folder_id: str) -> str | None:
+def find_file_in_folder(service, filename: str, folder_id: str) -> Optional[str]:
     """Find a file by name in a folder. Returns file ID or None."""
     query = (
         f"name = '{filename}' and "
