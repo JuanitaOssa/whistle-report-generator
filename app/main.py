@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from app.image_generator import generate_reports, BASE_DIR
-from app.drive_upload import upload_reports_to_drive
+from app.drive_upload import upload_reports_to_drive, DRIVE_PARENT_FOLDER_ID
 
 app = FastAPI(title="Whistle Report Generator", version="1.0.0")
 
@@ -38,6 +38,23 @@ def create_reports(req: ReportRequest):
 
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["error"])
+
+    # Skip Drive upload if not configured
+    if not DRIVE_PARENT_FOLDER_ID:
+        generated_files = []
+        for filename in result["generated_files"]:
+            generated_files.append({
+                "filename": filename,
+                "local_path": str(Path(result["output_folder"]) / filename),
+                "drive_file_id": None,
+                "drive_link": None,
+            })
+        return {
+            "success": True,
+            "output_folder": result["output_folder"],
+            "drive_folder_id": None,
+            "generated_files": generated_files,
+        }
 
     # Upload to Google Drive
     local_folder = BASE_DIR / result["output_folder"]
